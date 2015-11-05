@@ -1,0 +1,74 @@
+
+# Makefile for test hos
+
+HOSTDIR		= host
+
+###
+### Start of user-serviceable parts
+###
+
+# Default build target (or use "make <target>" to select one).
+# Targets are:
+#   host      -- build the simple Vamp plugin host
+#   clean     -- remove binary targets
+#   distclean -- remove all targets
+#
+default:	host
+
+# Compile flags
+#
+CC		= @CC@
+CXX		= @CXX@
+CFLAGS		= @CFLAGS@
+CXXFLAGS	= -I. @CXXFLAGS@ @VAMP_HOSTSDK_CFLAGS@ @SNDFILE_CFLAGS@
+
+# ar, ranlib
+#
+AR		= ar
+RANLIB		= ranlib
+
+# File extension for a dynamically loadable object
+#
+PLUGIN_EXT	= .so
+#PLUGIN_EXT	= .dll
+#PLUGIN_EXT	= .dylib
+
+# Libraries required for the host.
+#
+HOST_LIBS	= @VAMP_HOSTSDK_LIBS@ @SNDFILE_LIBS@ @LIBS@
+
+### End of user-serviceable parts
+
+HOST_HEADERS	= \
+		$(HOSTDIR)/system.h
+
+HOST_OBJECTS	= \
+		$(HOSTDIR)/vamp-simple-host.o
+
+HOST_TARGET	= \
+		$(HOSTDIR)/vamp-simple-host
+
+host:		$(HOST_TARGET)
+
+all:		sdk host test
+
+$(HOST_TARGET):	$(HOST_OBJECTS) $(HOSTSDK_STATIC) $(HOST_HEADERS)
+		$(CXX) $(LDFLAGS) $(HOST_LDFLAGS) -o $@ $(HOST_OBJECTS) $(HOST_LIBS)
+
+test:		host
+		$(HOST_TARGET) -l
+
+clean:		
+		rm -f $(HOST_OBJECTS) 
+
+distclean:	clean
+		rm -f $(HOST_TARGET) *~ */*~
+		rm -f config.log config.status Makefile
+
+depend:
+		makedepend -Y. */*.cpp */*/*.cpp */*/*/*.cpp
+
+# DO NOT DELETE
+
+host/vamp-simple-host.o: host/system.h
+

@@ -1,0 +1,27 @@
+VAMP Live
+=========
+
+Initially just a copy of the simple command-line vamp host from the vamp sdk.
+Hopefully becoming usable on live audio input...
+
+Chris Greenhalgh, The University of Nottingham, 2015
+
+Build - Linux
+-------------
+
+Ubuntu pre-reqs
+
+	sudo apt-get install libsndfile1-dev
+
+Then, in any case:
+
+	./configure
+	make
+
+Note, if changing configure.in then first:
+
+	sudo apt-get install autoconf
+	aclocal
+	autoconf
+
+
