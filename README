@@ -12,6 +12,10 @@ Build - Linux
 Ubuntu pre-reqs
 
 	sudo apt-get install libsndfile1-dev
+	sudo apt-get install pkg-config
+
+Build/install vamp plugin development stuff from
+http://www.vamp-plugins.org/develop.html
 
 Then, in any case:
 
