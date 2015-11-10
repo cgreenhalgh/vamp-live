@@ -16,6 +16,7 @@ Ubuntu pre-reqs
 
 Build/install vamp plugin development stuff from
 http://www.vamp-plugins.org/develop.html
+Note, on one machine had to do 'sudo ldconfig -v' to find shared libs.
 
 Then, in any case:
 
