@@ -24,11 +24,11 @@ e.g. [Silvet note transcription](http://www.cs.nott.ac.uk/~pszcmg/Music/Happy%20
 
 ```
 vamp-plugin-sdk-2.6/host/vamp-simple-host -L
-vamp-plugin-sdk-2.6/host/vamp-simple-host silvet:silvet 03\ Heathery\ Breeze.wav 
+vamp-plugin-sdk-2.6/host/vamp-simple-host silvet:silvet 03\ Heathery\ Breeze.wav 2 -p mode 0
 ```
 
 Note want plugin silvet:silvet, but parameter 'mode' value 0 (live), rather than default (1, intensive).
-
+Output 2, onoffset.
 
 
 																																	

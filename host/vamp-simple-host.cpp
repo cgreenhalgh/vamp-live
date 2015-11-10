@@ -53,6 +53,7 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <map>
 #include <sndfile.h>
 
 #include <cstring>
@@ -88,7 +89,8 @@ void printPluginCategoryList();
 void enumeratePlugins(Verbosity);
 void listPluginsInLibrary(string soname);
 int runPlugin(string myname, string soname, string id, string output,
-              int outputNo, string inputFile, string outfilename, bool frames);
+              int outputNo, string inputFile, string outfilename, bool frames,
+              map<string,float>);
 
 void usage(const char *name)
 {
@@ -98,10 +100,10 @@ void usage(const char *name)
         "Copyright 2006-2009 Chris Cannam and QMUL.\n"
         "Freely redistributable; published under a BSD-style license.\n\n"
         "Usage:\n\n"
-        "  " << name << " [-s] pluginlibrary[." << PLUGIN_SUFFIX << "]:plugin[:output] file.wav [-o out.txt]\n"
-        "  " << name << " [-s] pluginlibrary[." << PLUGIN_SUFFIX << "]:plugin file.wav [outputno] [-o out.txt]\n\n"
+        "  " << name << " [-s] pluginlibrary[." << PLUGIN_SUFFIX << "]:plugin[:output] file.wav [-o out.txt] [-p param FLOAT]\n"
+        "  " << name << " [-s] pluginlibrary[." << PLUGIN_SUFFIX << "]:plugin file.wav [outputno] [-o out.txt] [-p param FLOAT]\n\n"
         "    -- Load plugin id \"plugin\" from \"pluginlibrary\" and run it on the\n"
-        "       audio data in \"file.wav\", retrieving the named \"output\", or output\n"
+        "       audio data in \"file.wav\" (or stdin if \"-\"), retrieving the named \"output\", or output\n"
         "       number \"outputno\" (the first output by default) and dumping it to\n"
         "       standard output, or to \"out.txt\" if the -o option is given.\n\n"
         "       \"pluginlibrary\" should be a library name, not a file path; the\n"
@@ -206,6 +208,7 @@ int main(int argc, char **argv)
     string output = "";
     int outputNo = -1;
     string outfilename;
+    map<string,float> parameters;
 
     if (argc >= base+3) {
 
@@ -215,12 +218,17 @@ int main(int argc, char **argv)
             outputNo = atoi(argv[idx++]);
         }
 
-        if (argc == idx + 2) {
-            if (!strcmp(argv[idx], "-o")) {
+        while (argc > idx) {
+            if (!strcmp(argv[idx], "-o") && argc >= idx+2) {
                 outfilename = argv[idx+1];
-            } else usage(name);
-        } else if (argc != idx) {
-            (usage(name));
+                idx += 2;
+            }
+            else if (!strcmp(argv[idx], "-p") && argc >= idx+3) {
+                parameters[argv[idx+1]] = atof(argv[idx+2]);
+                idx += 3;
+            }
+            else 
+                usage(name);
         }
     }
 
@@ -259,13 +267,14 @@ int main(int argc, char **argv)
     }
 
     return runPlugin(name, soname, plugid, output, outputNo,
-                     wavname, outfilename, useFrames);
+                     wavname, outfilename, useFrames, parameters);
 }
 
 
 int runPlugin(string myname, string soname, string id,
               string output, int outputNo, string wavname,
-              string outfilename, bool useFrames)
+              string outfilename, bool useFrames,
+              map<string,float> parameters)
 {
     PluginLoader *loader = PluginLoader::getInstance();
 
@@ -275,7 +284,10 @@ int runPlugin(string myname, string soname, string id,
     SF_INFO sfinfo;
     memset(&sfinfo, 0, sizeof(SF_INFO));
 
-    sndfile = sf_open(wavname.c_str(), SFM_READ, &sfinfo);
+    if (wavname == "") 
+        sndfile = sf_open_fd(0, SFM_READ, &sfinfo, true);
+    else
+        sndfile = sf_open(wavname.c_str(), SFM_READ, &sfinfo);
     if (!sndfile) {
         cerr << myname << ": ERROR: Failed to open input file \""
              << wavname << "\": " << sf_strerror(sndfile) << endl;
@@ -308,6 +320,12 @@ int runPlugin(string myname, string soname, string id,
 
     cerr << "Running plugin: \"" << plugin->getIdentifier() << "\"..." << endl;
 
+    // parameters
+    for (map<string,float>::iterator iter = parameters.begin(); iter!=parameters.end(); iter++) {
+        plugin->setParameter(iter->first, iter->second);
+        cerr << "Set parameter " << iter->first << " = " << iter->second << endl;
+    }
+  
     // Note that the following would be much simpler if we used a
     // PluginBufferingAdapter as well -- i.e. if we had passed
     // PluginLoader::ADAPT_ALL to loader->loadPlugin() above, instead
