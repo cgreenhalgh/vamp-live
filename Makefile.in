@@ -7,6 +7,9 @@ HOSTDIR		= host
 ### Start of user-serviceable parts
 ###
 
+INSTALL_PREFIX	 	  = @prefix@
+INSTALL_BINARIES	  = $(INSTALL_PREFIX)/bin 
+
 # Default build target (or use "make <target>" to select one).
 # Targets are:
 #   host      -- build the simple Vamp plugin host
@@ -43,10 +46,10 @@ HOST_HEADERS	= \
 		$(HOSTDIR)/system.h
 
 HOST_OBJECTS	= \
-		$(HOSTDIR)/vamp-simple-host.o
+		$(HOSTDIR)/vamp-live-host.o
 
 HOST_TARGET	= \
-		$(HOSTDIR)/vamp-simple-host
+		$(HOSTDIR)/vamp-live-host
 
 host:		$(HOST_TARGET)
 
@@ -65,10 +68,14 @@ distclean:	clean
 		rm -f $(HOST_TARGET) *~ */*~
 		rm -f config.log config.status Makefile
 
+install:	$(HOST_TARGET)
+		mkdir -p $(DESTDIR)$(INSTALL_BINARIES)
+		cp $(HOST_TARGET) $(DESTDIR)$(INSTALL_BINARIES)
+
 depend:
 		makedepend -Y. */*.cpp */*/*.cpp */*/*/*.cpp
 
 # DO NOT DELETE
 
-host/vamp-simple-host.o: host/system.h
+host/vamp-live-host.o: host/system.h
 
