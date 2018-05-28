@@ -32,6 +32,8 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
+LIBS="-lpthread $LIBS"
+
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CFLAGS)
 AC_OUTPUT([Makefile])
